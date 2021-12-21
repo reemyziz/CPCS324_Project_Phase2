@@ -1,0 +1,122 @@
+// CPCS324 Project Phase 2 - Question 2 Task 2 (Bipartite matching algorithm)
+
+public class Question2_Task2_BipartiteMatching {
+
+    // M is number of applicants
+    // N is number of hospitals
+    static final int M = 6;
+    static final int N = 6;
+    static int matchR[] = new int[N];
+
+    public static void main(String[] args) throws java.lang.Exception {
+        System.out.println("-------------- CPCS324 Project - CPCS324 Project - Question 2, Task 2 --------------\n");
+
+        // Make the graph of the two sets
+        boolean graph[][] = new boolean[][]{
+            {true, true, false, false, false, false},
+            {false, false, false, false, false, true},
+            {true, false, false, true, false, false},
+            {false, false, true, false, false, false},
+            {false, false, false, true, true, false},
+            {false, false, false, false, false, true}};
+
+        // hospitals: array to store hospital names
+        // applicants: array to store applicants' names
+        String hospitals[]
+                = {"King Abdelaziz University",
+                    "King Fahd",
+                    "East Jeddah",
+                    "King Fahad Armed Forces",
+                    "King Faisal Specialist",
+                    "Ministry of National Guard"};
+
+        String applicants[]
+                = {"Ahmed",
+                    "Mahmoud",
+                    "Eman",
+                    "Fatimah",
+                    "Kamel",
+                    "Nojood"};
+
+        // Set all positions as not positioned yet 
+        boolean positioned[] = new boolean[N];
+        for (int i = 0; i < positioned.length; i++) {
+            positioned[i] = false;
+        }
+
+        int result = maxBPM(graph);
+        for (int i = 0; i < N; i++) {
+            if (matchR[i] > -1) {
+                System.out.println(applicants[matchR[i]] + "\t   Positioned at   " + hospitals[i] + " Hospital");
+                positioned[matchR[i]] = true;
+            }
+        }
+
+        System.out.println("");//new line
+
+        // Print the unpositioned applicants and hospitals
+        for (int j = 0; j < N; j++) {
+            if (positioned[j] == false) {
+                System.out.println(applicants[j] + " does not positioned by any hospital");
+            }
+            if (matchR[j] == -1) {
+                System.out.println(hospitals[j] + " does not positioned any applicant");
+            }
+        }
+
+        // Print the maximum mathcing result
+        System.out.println("\nMaximum number of applicants that can get a position in hospital are " + result);
+        System.out.println("\n------------------------------------------------------------------------------------\n");
+
+    }
+
+    static int maxBPM(boolean bpGraph[][]) {
+        // An array to keep track of the applicants assigned to hospitals
+        // The value of matchR[i] is the applicant number assigned to hospital i, 
+        // the value -1 indicates nobody is assigned a hospital
+
+        // Initially all hospitals are available
+        for (int i = 0; i < N; ++i) {
+            matchR[i] = -1;
+        }
+
+        // Count of hospital appointed applicants
+        int result = 0;
+        for (int u = 0; u < M; u++) {
+            // Mark all hospitals as not seen for next applicant
+            boolean seen[] = new boolean[N];
+            for (int i = 0; i < N; ++i) {
+                seen[i] = false;
+            }
+
+            // Find if the applicant 'u' can appoint 
+            if (bipartiteMatching(bpGraph, u, seen, matchR)) {
+                result++;
+            }
+        }
+        return result;
+    }
+
+    static boolean bipartiteMatching(boolean bpGraph[][], int u, boolean seen[], int matchR[]) {
+        // Try every hospital one by one
+        for (int v = 0; v < N; v++) {
+            // If applicant u is interested in hospital v AND v is not visited
+            if (bpGraph[u][v] && !seen[v]) {
+
+                // Mark v as visited
+                seen[v] = true;
+
+                // If hospital 'v' is not assigned to an applicant OR previously assigned applicant for hospital v (which
+                // is matchR[v]) has an alternate job available.
+                // Since v is marked as visited in the above line, matchR[v] in the following
+                // recursive call will not get hospital 'v' again
+                if (matchR[v] < 0 || bipartiteMatching(bpGraph, matchR[v], seen, matchR)) {
+                    matchR[v] = u;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+}
