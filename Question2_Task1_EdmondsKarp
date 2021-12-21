@@ -2,7 +2,7 @@
 
 import java.util.*;
 
-public class Question2_Task1_EdmondsKarp {
+public class Task1_EdmondsKarp {
 
     static class Graph {
 
@@ -155,6 +155,8 @@ public class Question2_Task1_EdmondsKarp {
 // --------------------------------------------------------------------------------------------------------------------
 
         public static void main(String[] args) {
+            // Print header
+            System.out.println("-------------- CPCS324 Project - Question 2, Task 1 --------------\n");
             // Number of vertices
             int vertices = 6;
             // Graph given in project document
