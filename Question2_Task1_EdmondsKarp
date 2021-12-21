@@ -1,0 +1,175 @@
+// CPCS324 Project Phase 2 - Question 1 Task 1 (Edmonds-Karp's maximum flow algorithm)
+
+import java.util.*;
+
+public class Question2_Task1_EdmondsKarp {
+
+    static class Graph {
+
+        int vertices;
+        int graph[][];
+
+        public Graph(int vertex, int[][] graph) {
+            this.vertices = vertex;
+            this.graph = graph;
+        }
+
+        public void findMaxFlow(int source, int destination, int vertices) {
+            System.out.println("\t\t    Maximum flow");
+            System.out.println("------------------------------------------------");
+            System.out.println("\t\tAugmentation paths");
+            System.out.println("------------------------------------------------");
+            // ----------------------------------------------------------------------------------
+            // Variables i, j to use in loops
+            int i, j;
+            // Create residual graph which is a copy of original graph
+            int residualGraph[][] = new int[vertices][vertices];
+            for (i = 0; i < vertices; i++) {
+                for (j = 0; j < vertices; j++) {
+                    residualGraph[i][j] = graph[i][j];
+                }
+            }
+            // ----------------------------------------------------------------------------------
+            // Array parent is used to store the paths found by BFS
+            int parent[] = new int[vertices];
+            // Max flow is initally 0
+            int maxFlow = 0;
+            // If a path is found using BFS
+            while (BFS(residualGraph, source, destination, parent, vertices)) {
+                String printPath = "";
+                // Path flow is assigned a max value at first
+                int pathFlow = Integer.MAX_VALUE;
+                for (j = destination; j != source; j = parent[j]) {
+                    String arrow = "<-";
+                    // Parent of j becomes i
+                    i = parent[j];
+                    // Calculate path flow
+                    pathFlow = Math.min(pathFlow, residualGraph[i][j]);
+                    if (graph[i][j] != 0) {
+                        arrow = "->";
+                    }
+                    printPath = arrow + (j + 1) + printPath;
+                }
+                // ----------------------------------------------------------------------------------
+                printPath = (j + 1) + printPath;
+                System.out.println("Path = " + printPath);
+                System.out.println("Path flow = " + pathFlow);
+                // Update the residual graph
+                // Reduce the capacity on forward edge by flowCapacity
+                // Add the capacity on back edge by flowCapacity
+                for (j = destination; j != source; j = parent[j]) {
+                    // Parent of j becomes i
+                    i = parent[j];
+                    residualGraph[i][j] -= pathFlow;
+                    residualGraph[j][i] += pathFlow;
+                }
+                // ----------------------------------------------------------------------------------
+                // Add path flow to max flow
+                maxFlow += pathFlow;
+                // Print max flow
+                System.out.println("Updated flow = " + maxFlow);
+                System.out.println("");
+
+            }
+            // ----------------------------------------------------------------------------------
+            // Print maximum flow
+            System.out.println("> The maximum flow is " + maxFlow);
+            System.out.println("------------------------------------------------");
+            System.out.println("\t\t   Minimum cut");
+            System.out.println("------------------------------------------------");
+            // Print the minimum cut edges
+            System.out.println("> Edges in the minimum cut ");
+            // Create visited array to mark vertices as 'visited' or 'not visited'
+            boolean[] visited = new boolean[graph.length];
+            // Perform DFS on residual graph to get minimum cut
+            DFS(residualGraph, source, visited);
+            // ----------------------------------------------------------------------------------
+            // Print all edges that are from a reachable vertex to non-reachable vertex in the original graph
+            int totalCut = 0;
+            for (i = 0; i < graph.length; i++) {
+                for (j = 0; j < graph.length; j++) {
+                    // If the weight of graph[i][j] is larger than 0 AND i is visited but j is not visited
+                    if (graph[i][j] > 0 && visited[i] == true && visited[j] == false) {
+                        System.out.println("Edge from vertex " + (i + 1) + " to " + (j + 1));
+                        // Print the capacity (weight)
+                        System.out.println("Capacity = " + graph[i][j]);
+                        // Calculate total cut
+                        totalCut += graph[i][j];
+                        System.out.println("Updated minimum-cut capacity = " + totalCut);
+                        System.out.println("");
+                    }
+                }
+            }
+            System.out.println("> The total minimum-cut capacity is " + totalCut);
+        }
+// --------------------------------------------------------------------------------------------------------------------
+
+        public boolean BFS(int residualGraph[][], int source, int destination, int parent[], int vertices) {
+            // Create a visited array
+            boolean visited[] = new boolean[vertices];
+            for (int i = 0; i < vertices; ++i) {
+                // Mark all vertices as 'not visited'
+                visited[i] = false;
+            }
+            // Create queue
+            LinkedList<Integer> queue = new LinkedList<>();
+            // Add source vertex to queue
+            queue.add(source);
+            // Mark source vertex as 'visited'
+            visited[source] = true;
+            // The parent of source vertex is initially -1
+            parent[source] = -1;
+            // Loop through queue
+            while (queue.isEmpty() == false) {
+                // f is initially the first vertex in the queue
+                int f = queue.poll();
+                // Loop through all vertices
+                for (int i = 0; i < vertices; i++) {
+                    // If index i is not visited AND its weight is larger than 0
+                    if (visited[i] == false && residualGraph[f][i] > 0) {
+                        // Add i to queue
+                        queue.add(i);
+                        // Assign parent to index i
+                        parent[i] = f;
+                        // Mark i as 'visited'
+                        visited[i] = true;
+                    }
+                }
+            }
+            // If destination (sink) is reached while performing BFS (from source), return true. Else, return false
+            return (visited[destination] == true);
+        }
+// --------------------------------------------------------------------------------------------------------------------
+        // DFS used to calculate minimum-cut
+
+        public void DFS(int[][] graph, int source, boolean[] visited) {
+            // Mark source as 'visited'
+            visited[source] = true;
+            for (int i = 0; i < graph.length; i++) {
+                // If index's weight is larger than 0 AND it's not visited
+                if (graph[source][i] > 0 && visited[i] == false) {
+                    DFS(graph, i, visited);
+                }
+            }
+        }
+// --------------------------------------------------------------------------------------------------------------------
+
+        public static void main(String[] args) {
+            // Number of vertices
+            int vertices = 6;
+            // Graph given in project document
+            int graph[][] = new int[][]{
+                {0, 2, 7, 0, 0, 0},
+                {0, 0, 0, 3, 4, 0},
+                {0, 0, 0, 4, 2, 0},
+                {0, 0, 0, 0, 0, 1},
+                {0, 0, 0, 0, 0, 5},
+                {0, 0, 0, 0, 0, 0}
+            };
+            int source = 0;
+            int destination = 5;
+            Graph EdmondsKarpGraph = new Graph(vertices, graph);
+            EdmondsKarpGraph.findMaxFlow(source, destination, vertices);
+        }
+    }
+}
