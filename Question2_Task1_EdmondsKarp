@@ -1,4 +1,4 @@
-// CPCS324 Project Phase 2 - Question 1 Task 1 (Edmonds-Karp's maximum flow algorithm)
+// CPCS324 Project Phase 2 - Question 2 Task 1 (Edmonds-Karp's maximum flow algorithm)
 
 import java.util.*;
 
