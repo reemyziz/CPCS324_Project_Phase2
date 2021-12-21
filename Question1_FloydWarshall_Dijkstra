@@ -1,0 +1,300 @@
+// CPCS324 Project Phase 2 - Question 1 (Floyd-Warshall's algorithm, and Dijkstra's algorithm)
+
+import java.util.*;
+
+public class Question1_FloydWarshall_Dijkstra {
+
+    public static void main(String[] args) {
+
+        Scanner input = new Scanner(System.in);
+        int choice = 0;
+        double startTime = 0;
+        double finishTime = 0;
+
+        do {
+
+            System.out.println("----------------------------------------------");
+            System.out.println("       --- CPCS324 PROJECT PART II ---");
+            System.out.println("       ---        QUESTION 1       ---");
+            System.out.println("----------------------------------------------");
+            System.out.println("Choose from the menu:");
+            System.out.println("> Enter 1 to answer task #1, Floyd-Warshall Algorithm");
+            System.out.println("> Enter 2 to answer task #2, Dijkstra Algorithm");
+            System.out.println("> Enter 0 to Quit");
+            System.out.println("----------------------------------------------");
+            System.out.print("Enter Your Choice: ");
+            choice = input.nextInt();
+
+            if (choice == 1) {
+                // Show the graph before changes
+                int graph[][] = chooseGraph(10);
+                System.out.println("\n ---- Graph Before Changes ---- \n");
+                printGraph(graph);
+                System.out.println("\n ---- Graph After Floyed-Warshal Changes ---- \n");
+                startTime = System.currentTimeMillis();
+                FloydWarshall(10); // Call the graph of size 10 that was given to us
+                finishTime = System.currentTimeMillis();
+                double totalTime = finishTime - startTime;
+                System.out.println("----------------------------------------------");
+                System.out.println("Runtime (in Milliseconds) : " + totalTime + "\n\n");
+            } else if (choice == 2) {
+                startTime = System.currentTimeMillis();
+                Dijkstra(10); // Call the graph of size 10 that was given to us
+                finishTime = System.currentTimeMillis();
+                System.out.println("----------------------------------------------");
+                double totalTime = finishTime - startTime;
+                System.out.println("Runtime (in Milliseconds) : " + totalTime + "\n\n");
+            } else if (choice == 0) {
+                // Terminate
+                break;
+            } else {
+                System.out.println("\n-- Wrong input, please try again --\n");
+            }
+
+        } while (true);
+        System.out.println("\n----------------------------------------------");
+        System.out.println("             -- Thnak You ---");
+        System.out.println("----------------------------------------------");
+
+    }// Main
+
+    //--------------------------------------------------------------------------
+    // Method to chose a graph with a certain size
+    static int[][] chooseGraph(int size) {
+        // This method cantain 4 graphs of sizes (10, 20, 30, 40)
+        final int INF = 999999;
+        int graph[][]
+                // Graph obtained from project document, size of 10 vertices
+                = {{0, 10, INF, INF, INF, 5, INF, INF, INF, INF},
+                {INF, 0, 3, INF, 3, INF, INF, INF, INF, INF},
+                {INF, INF, 0, 4, INF, INF, INF, 5, INF, INF},
+                {INF, INF, INF, 0, INF, INF, INF, INF, 4, INF},
+                {INF, INF, 4, INF, 0, INF, 2, INF, INF, INF},
+                {INF, 3, INF, INF, INF, 0, INF, INF, INF, 2},
+                {INF, INF, INF, 7, INF, INF, 0, INF, INF, INF},
+                {INF, INF, INF, 4, INF, INF, INF, 0, 3, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, 0, INF},
+                {INF, 6, INF, INF, INF, INF, 8, INF, INF, 0}};
+
+        int graph2[][]
+                // Directed acyclic graph of 20 vertices
+                = {{0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 6, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 0, 4, INF, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 7, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 3, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, 9, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0}};
+
+        int graph3[][]
+                // Directed acyclic graph of 30 vertices
+                = {{0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 6, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 0, 4, INF, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 7, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, 9, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 6, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0}};
+
+        int graph4[][]
+                // Directed acyclic graph of 40 vertices
+                = {{0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 6, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 0, 4, INF, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 7, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, 9, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF, 10, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 6, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 10, INF, INF, INF, 5, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 3, INF, 3, INF, INF, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, 4, INF, INF, INF, 5, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF, INF, INF, INF, 4, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, 0, INF, 2, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 3, INF, INF, INF, 0, INF, INF, INF, 2},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 7, INF, INF, 0, INF, INF, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 4, INF, INF, INF, 0, 3, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 0, INF},
+                {INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, INF, 6, INF, INF, INF, INF, 8, INF, INF, 0}};
+
+        // Return the correct graph
+        if (size == 10) {
+            return graph;
+        } else if (size == 20) {
+            return graph2;
+        } else if (size == 30) {
+            return graph3;
+        } else {
+            return graph4;
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    //Floyd-Warshal's algorithm
+    static void FloydWarshall(int sizeOfGraph) {
+        // Get the graph using "chooseGraph" method
+        int graph[][] = chooseGraph(sizeOfGraph);
+        // Get number of vertices
+        int numOfVertices = graph.length;
+        // Start the algorithm
+        for (int k = 0; k < numOfVertices; k++) {
+            for (int i = 0; i < numOfVertices; i++) {
+                for (int j = 0; j < numOfVertices; j++) {
+                    graph[i][j] = Math.min(graph[i][j], (graph[i][k] + graph[k][j]));
+                }
+            }
+            // Print the graph after applying Floyd-Warshall's algorithm
+            printGraph(graph);
+
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    static void printGraph(int graph[][]) {
+        //get the graph size 
+        int numVertix = graph.length;
+
+        //------ Print Header ----------------
+        System.out.print("   ");
+        for (int i = 0; i < numVertix; i++) {
+            System.out.printf("%-4s", (char) (i + 65));
+        }
+        System.out.println(); // Start new line
+
+        // Print line
+        for (int i = 0; i < numVertix + 1; i++) {
+            System.out.print("----");
+        }
+        System.out.println();//new line
+
+        //---- Print Matrix -------------------
+        for (int i = 0; i < numVertix; i++) {
+            System.out.print((char) (i + 65) + "| ");
+            for (int j = 0; j < numVertix; j++) {
+                if (graph[i][j] == 999999) {
+                    System.out.print("∞ ,");
+                } else {
+                    System.out.printf("%-2d, ", graph[i][j]);
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("\n");
+    }
+
+    //--------------------------------------------------------------------------
+    // Dijkstra's algorithm
+    static void Dijkstra(int sizeOfGraph) {
+        // Get the graph
+        int graph[][] = chooseGraph(sizeOfGraph);
+        // Check the size
+        int size = graph.length;
+        final int INF = 999999;
+        // Prepare the other material we need
+        boolean[] isVisited = new boolean[size];
+        int distance[] = new int[size];
+        String[] path = new String[size];
+        // Make all the vertices unvisited and distance as infinity
+        for (int i = 0; i < size; i++) {
+            isVisited[i] = false;
+            distance[i] = INF;
+        }
+        // Take the source as the first vertix 'A', and prepare the paths
+        distance[0] = 0;
+        path[0] = "A --" + distance[0] + "--> ";
+
+        // --- Start Dijkstra ---
+        for (int i = 0; i < size; i++) {
+            // Find the minium distance among all the vertices
+            int u = -1;
+            int minDistance = INF;
+            for (int j = 0; j < size; j++) {
+                if (isVisited[j] != true && distance[j] < minDistance) {
+                    minDistance = distance[j];
+                    u = j; // Min vertix index
+                }
+            }
+
+            // Set u as visited
+            isVisited[u] = true;
+
+            // Update the adjacent distances
+            for (int v = 0; v < size; v++) {
+                if (isVisited[v] != true && graph[u][v] != INF && graph[u][v] != 0) {
+                    if (distance[u] + graph[u][v] < distance[v]) {
+                        distance[v] = distance[u] + graph[u][v];
+                        // Update the path by adding the parent path plus the current vertix path
+                        path[v] = path[u] + (char) (v + 65) + " --" + (distance[v] - distance[u]) + "--> ";
+                    }
+                }
+            }
+        }
+
+        // Print all the distances with the pathes
+        System.out.println("\n----- Dijkstra Algorithm -----");
+        System.out.println("All the shortest distances from vertex 'A' to other vertices in graph");
+        for (int i = 0; i < size; i++) {
+            System.out.println("  > Shortest Distance from 'A' to '" + (char) (i + 65) + "' is " + distance[i] + ", the Path: " + path[i] + " " + (char) (i + 65) + " " + distance[i]);
+        }
+        System.out.println();
+    }
+
+}
